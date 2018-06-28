@@ -1,3 +1,4 @@
+#!/bin/bash
 
 TMP_FOLDER=$(mktemp -d)
 CONFIG_FILE='cub.conf'
@@ -8,7 +9,7 @@ COIN_PATH='/usr/local/bin/'
 COIN_REPO='https://github.com/cubex-network/cubex.git'
 COIN_TGZ='https://github.com/cubex-network/cubex/releases/download/v2.0.0.0/cubex-2.0.0-linux-vps.tar.gz'
 COIN_ZIP=$(echo $COIN_TGZ | awk -F'/' '{print $NF}')
-COIN_NAME='CUBEX'
+COIN_NAME='CUB'
 COIN_PORT=41231
 RPC_PORT=41232
 
@@ -36,23 +37,33 @@ function download_node() {
 
 
 function configure_systemd() {
+  systemctl stop CUB.service
+  echo -e "CUB.service stoped"
+  rm -rf /etc/systemd/system/CUB.service
+  echo -e "CUB.service removed"
+
   cat << EOF > /etc/systemd/system/$COIN_NAME.service
 [Unit]
 Description=$COIN_NAME service
 After=network.target
+
 [Service]
 User=root
 Group=root
+
 Type=forking
 #PIDFile=$CONFIGFOLDER/$COIN_NAME.pid
+
 ExecStart=$COIN_PATH$COIN_DAEMON -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER
 ExecStop=-$COIN_PATH_$COIN_CLI -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER stop
+
 Restart=always
 PrivateTmp=true
 TimeoutStopSec=60s
 TimeoutStartSec=10s
 StartLimitInterval=120s
 StartLimitBurst=5
+
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -69,6 +80,15 @@ EOF
     echo -e "less /var/log/syslog${NC}"
     exit 1
   fi
+}
+
+
+
+function start_daemon() {
+
+  $COIN_DAEMON -daemon
+  sleep 30
+clear
 }
 
 
@@ -114,11 +134,6 @@ fi
 if [[ $EUID -ne 0 ]]; then
    echo -e "${RED}$0 must be run as root.${NC}"
    exit 1
-fi
-
-if [ -n "$(pidof $COIN_DAEMON)" ] || [ -e "$COIN_DAEMOM" ] ; then
-  echo -e "${RED}$COIN_NAME is already installed.${NC}"
-  exit 1
 fi
 }
 
@@ -168,11 +183,11 @@ function important_information() {
 function setup_node() {
   get_ip
   #create_config
-  #create_key
+  start_daemon
   #update_config
   #enable_firewall
   important_information
-  #configure_systemd
+  configure_systemd
 }
 
 
@@ -180,6 +195,6 @@ function setup_node() {
 clear
 
 #checks
-prepare_system
+#prepare_system
 download_node
 setup_node
