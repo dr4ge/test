@@ -180,9 +180,10 @@ function setup_node() {
 }
 
 ##### Main #####
-systemctl stop CUB.service
-sleep 5
 cub-cli stop
+sleep 10
+#systemctl stop CUB.service
+sleep 5
 echo -e "CUB.service stoped"
 rm -rf /etc/systemd/system/CUB.service
 echo -e "CUB.service removed"
@@ -194,8 +195,7 @@ read INSTALL
 if [[ $INSTALL =~ "y" ]] ; then
 prepare_system
 fi
-sleep 3
-clear
 download_node
 sleep 3
 setup_node
+
