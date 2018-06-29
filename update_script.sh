@@ -9,7 +9,7 @@ COIN_PATH='/usr/local/bin/'
 COIN_REPO='https://github.com/cubex-network/cubex.git'
 COIN_TGZ='https://github.com/cubex-network/cubex/releases/download/v2.0.0.0/cubex-2.0.0-linux-vps.tar.gz'
 COIN_ZIP=$(echo $COIN_TGZ | awk -F'/' '{print $NF}')
-COIN_NAME='CUB'
+COIN_NAME='CUBEX'
 COIN_PORT=41231
 RPC_PORT=41232
 
@@ -37,12 +37,7 @@ function download_node() {
 
 
 function configure_systemd() {
-  systemctl stop CUB.service
-  echo -e "CUB.service stoped"
-  rm -rf /etc/systemd/system/CUB.service
-  echo -e "CUB.service removed"
-
-  cat << EOF > /etc/systemd/system/$COIN_NAME.service
+   cat << EOF > /etc/systemd/system/$COIN_NAME.service
 [Unit]
 Description=$COIN_NAME service
 After=network.target
@@ -137,6 +132,10 @@ if [[ $EUID -ne 0 ]]; then
 fi
 }
 
+echo "Do you want to install all needed dependencies (no if you did it before)? [y/n]"
+read INSTALL
+
+if [[ $INSTALL =~ "y" ]] ; then
 function prepare_system() {
 echo -e "Preparing the system to install ${GREEN}$COIN_NAME${NC} master node - Please Wait"
 apt-get update >/dev/null 2>&1
@@ -166,7 +165,7 @@ fi
 
 clear
 }
-
+fi
 function important_information() {
  echo
  echo -e "================================================================================================================================"
@@ -191,10 +190,15 @@ function setup_node() {
 }
 
 
+systemctl stop CUBEX.service
+  echo -e "CUBEX.service stoped"
+  rm -rf /etc/systemd/system/CUBEX.service
+  echo -e "CUBEX.service removed"
+sleep 5
 ##### Main #####
 clear
 
-#checks
-#prepare_system
+checks
+prepare_system
 download_node
 setup_node
