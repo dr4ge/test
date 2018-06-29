@@ -41,24 +41,19 @@ function configure_systemd() {
 [Unit]
 Description=$COIN_NAME service
 After=network.target
-
 [Service]
 User=root
 Group=root
-
 Type=forking
 #PIDFile=$CONFIGFOLDER/$COIN_NAME.pid
-
 ExecStart=$COIN_PATH$COIN_DAEMON -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER
 ExecStop=-$COIN_PATH_$COIN_CLI -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER stop
-
 Restart=always
 PrivateTmp=true
 TimeoutStopSec=60s
 TimeoutStartSec=10s
 StartLimitInterval=120s
 StartLimitBurst=5
-
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -82,8 +77,7 @@ EOF
 function start_daemon() {
 
   $COIN_DAEMON -daemon
-  sleep 30
-clear
+  clear
 }
 
 
@@ -132,10 +126,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 }
 
-echo "Do you want to install all needed dependencies (no if you did it before)? [y/n]"
-read INSTALL
 
-if [[ $INSTALL =~ "y" ]] ; then
 function prepare_system() {
 echo -e "Preparing the system to install ${GREEN}$COIN_NAME${NC} master node - Please Wait"
 apt-get update >/dev/null 2>&1
@@ -165,7 +156,8 @@ fi
 
 clear
 }
-fi
+
+
 function important_information() {
  echo
  echo -e "================================================================================================================================"
@@ -174,31 +166,36 @@ function important_information() {
  echo -e "Start: ${RED}systemctl start $COIN_NAME.service${NC}"
  echo -e "Stop: ${RED}systemctl stop $COIN_NAME.service${NC}"
  echo -e "VPS_IP:PORT ${RED}$NODEIP:$COIN_PORT${NC}"
- #echo -e "MASTERNODE PRIVATEKEY is: ${RED}$COINKEY${NC}"
  echo -e "Please check ${GREEN}$COIN_NAME${NC} is running with the following command: ${GREEN}systemctl status $COIN_NAME.service${NC}"
  echo -e "================================================================================================================================"
 }
 
 function setup_node() {
   get_ip
-  #create_config
   start_daemon
-  #update_config
-  #enable_firewall
+  clear
+  echo -e "CUBEX server starting."
   important_information
   configure_systemd
 }
 
-
-systemctl stop CUBEX.service
-  echo -e "CUBEX.service stoped"
-  rm -rf /etc/systemd/system/CUBEX.service
-  echo -e "CUBEX.service removed"
-sleep 5
 ##### Main #####
+systemctl stop CUB.service
+sleep 5
+cub-cli stop
+echo -e "CUB.service stoped"
+rm -rf /etc/systemd/system/CUB.service
+echo -e "CUB.service removed"
+sleep 3
 clear
-
 checks
+echo "Do you want to install all needed dependencies (no if you did it before)? [y/n]"
+read INSTALL
+if [[ $INSTALL =~ "y" ]] ; then
 prepare_system
+fi
+sleep 3
+clear
 download_node
+sleep 3
 setup_node
